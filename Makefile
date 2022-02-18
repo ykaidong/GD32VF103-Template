@@ -95,6 +95,11 @@ endif
 # Generate dependency information
 CFLAGS += -std=gnu11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 
+# Generation a separate ELF section for each function and variable in the source file
+# Cooperate -Wl,--gc-sections option to eliminating the unused code and data
+# from the final executable
+CFLAGS += -ffunction-sections -fdata-sections
+
 #######################################
 # LDFLAGS
 #######################################
