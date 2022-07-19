@@ -1,14 +1,52 @@
 ###### GD32V Makefile ######
 
-
 ######################################
-# target
+# Target
 ######################################
 TARGET = GD32VF103
 
 
 ######################################
-# building variables
+# Source
+######################################
+# C sources
+C_SOURCES =  \
+$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral/Source/*.c) \
+$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral/*.c) \
+$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/drivers/*.c) \
+$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/*.c) \
+$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/stubs/*.c) \
+
+# add your c source here
+C_SOURCES += \
+$(wildcard ./*.c) \
+
+# ASM sources
+ASM_SOURCES =  \
+GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/start.s \
+GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/entry.s \
+
+
+######################################
+# Includes
+######################################
+# C includes
+C_INCLUDES =  \
+-I GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral/Include \
+-I GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral \
+-I GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/drivers \
+-I GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/stubs \
+
+# add your includes here
+C_INCLUDES += \
+-I . \
+
+# AS includes
+AS_INCLUDES = 
+
+
+######################################
+# Building variables
 ######################################
 # debug build?
 DEBUG = 1
@@ -18,34 +56,37 @@ OPT = -Og
 # Build path
 BUILD_DIR = build
 
-######################################
-# source
-######################################
-# C sources
-C_SOURCES =  \
-$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral/Source/*.c) \
-$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral/*.c) \
-$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/drivers/*.c) \
-$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/*.c) \
-$(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/stubs/*.c) \
-$(wildcard ./*.c) \
-# $(wildcard GD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_usbfs_driver/Source/*.c) \
-
-# ASM sources
-ASM_SOURCES =  \
-GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/start.s \
-GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/entry.s \
 
 ######################################
-# firmware library
+# Defines
+######################################
+# macros for gcc
+# C defines
+C_DEFS =  \
+-D USE_STDPERIPH_DRIVER \
+-D HXTAL_VALUE=8000000U \
+
+# AS defines
+AS_DEFS = 
+
+
+######################################
+# Firmware library
 ######################################
 PERIFLIB_SOURCES = \
 # $(wildcard Lib/*.a)
 
+
+#######################################
+# Linker
+#######################################
+# link script
+LDSCRIPT = GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/GD32VF103xB.lds
+
+
 #######################################
 # binaries
 #######################################
-
 PREFIX = riscv32-unknown-elf-
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
@@ -56,32 +97,12 @@ OD = $(PREFIX)objdump
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
  
+
 #######################################
 # CFLAGS
 #######################################
-# cpu
+# architecture
 ARCH = -march=rv32imac -mabi=ilp32 -mcmodel=medlow
-
-# macros for gcc
-# AS defines
-AS_DEFS = 
-
-# C defines
-C_DEFS =  \
--DUSE_STDPERIPH_DRIVER \
--DHXTAL_VALUE=8000000U \
-
-# AS includes
-AS_INCLUDES = 
-
-# C includes
-C_INCLUDES =  \
--IGD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral/Include \
--IGD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_standard_peripheral \
--IGD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/drivers \
--IGD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/stubs \
--I. \
-# -IGD32VF103_Firmware_Library_V1.1.0/Firmware/GD32VF103_usbfs_driver/Include \
 
 # compile gcc flags
 ASFLAGS = $(ARCH) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wl,-Bstatic#, -ffreestanding -nostdlib
@@ -100,12 +121,6 @@ CFLAGS += -std=gnu11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 # from the final executable
 CFLAGS += -ffunction-sections -fdata-sections
 
-#######################################
-# LDFLAGS
-#######################################
-# link script
-LDSCRIPT = GD32VF103_Firmware_Library_V1.1.0/Firmware/RISCV/env_Eclipse/GD32VF103xB.lds
-
 # libraries
 LIBS = -lc_nano -lm
 LIBDIR = 
@@ -114,8 +129,9 @@ LDFLAGS = $(ARCH) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) $(PERIFLIB_SOURCES) -Wl,--no-r
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
+
 #######################################
-# build the application
+# Build the application
 #######################################
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
@@ -149,18 +165,22 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir $@
 
-#######################################
-# clean up
-#######################################
 
+#######################################
+# Clean up
+#######################################
 clean:
 	-rm -fR .dep $(BUILD_DIR)
 
+
+#######################################
+# Program
+#######################################
 flash: all
-	$()openocd -c "adapter driver cmsis-dap; adapter speed 5000; transport select jtag" -f ./gd32vf103.cfg -c "program $(BUILD_DIR)/$(TARGET).elf" -c "reset; exit"
+	$()openocd -c "adapter driver cmsis-dap; adapter speed 5000; transport select jtag" -f target/gd32vf103.cfg -c "program $(BUILD_DIR)/$(TARGET).elf" -c "reset; exit"
 
 debug: all
-	$()openocd -c "adapter driver cmsis-dap; adapter speed 5000; transport select jtag" -f ./gd32vf103.cfg 
+	$()openocd -c "adapter driver cmsis-dap; adapter speed 5000; transport select jtag" -f target/gd32vf103.cfg 
 
 dfu: all
 	$()dfu-util -a 0 -s 0x08000000:leave -D $(BUILD_DIR)/$(TARGET).bin
