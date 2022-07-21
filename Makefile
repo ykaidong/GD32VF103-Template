@@ -114,7 +114,7 @@ CFLAGS += -g -gdwarf-2
 endif
 
 # Generate dependency information
-CFLAGS += -std=gnu11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+CFLAGS += -std=gnu11 -MMD -MP -MF"$(@:%.o=%.d)" #-MT"$(@:%.o=%.d)"
 
 # Generation a separate ELF section for each function and variable in the source file
 # Cooperate -Wl,--gc-sections option to eliminating the unused code and data
@@ -170,7 +170,7 @@ $(BUILD_DIR):
 # Clean up
 #######################################
 clean:
-	-rm -fR .dep $(BUILD_DIR)
+	-rm -fR $(BUILD_DIR)
 
 
 #######################################
@@ -189,5 +189,6 @@ dfu: all
 # dependencies
 #######################################
 # -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
+-include $(wildcard $(BUILD_DIR)/*.d)
 
 # *** EOF ***
